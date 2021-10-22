@@ -111,6 +111,14 @@ class PetastormStorageEngine(AbstractStorageEngine):
         Return:
             Iterator of Batch read.
         """
+        # print(str(columns))
+        # print(str(table.id))
+        # print(str(table.__tablename__))
+        # print(str(table.name))
+        # print(str(batch_mem_size))
+        # print(table.name())
+        # print(batch_mem_size)
+        # print(columns)
         predicate = None
         if predicate_func and columns:
             predicate = in_lambda(columns, predicate_func)
@@ -121,7 +129,10 @@ class PetastormStorageEngine(AbstractStorageEngine):
             self._spark_url(table),
             batch_mem_size=batch_mem_size,
             predicate=predicate)
+        # print(petastorm_reader.batch_mem_size)
         for batch in petastorm_reader.read():
+            # print(str(batch.frames))
+            # print(str(len(batch.frames)))
             yield batch
 
     def _open(self, table):

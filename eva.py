@@ -20,6 +20,8 @@ from src.udfs.udf_bootstrap_queries import init_builtin_udfs
 from src.configuration.configuration_manager import ConfigurationManager
 from src.utils.logging_manager import LoggingManager
 from src.utils.logging_manager import LoggingLevel
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 def eva():

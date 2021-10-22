@@ -18,7 +18,7 @@ from typing import Iterator, Dict
 import pandas as pd
 
 from src.models.storage.batch import Batch
-
+import csv
 
 class AbstractReader(metaclass=ABCMeta):
     """
@@ -55,9 +55,27 @@ class AbstractReader(metaclass=ABCMeta):
                 row_size = data['data'].nbytes
             data_batch.append(data)
             if len(data_batch) * row_size >= self.batch_mem_size:
+                with open('reads.csv', 'a') as f:
+                    row = []
+                    row.append(self.file_url)
+                    for frame in data_batch:
+                        row.append(frame['id'])
+                    # create the csv writer
+                    writer = csv.writer(f)
+                    # write a row to the csv file
+                    writer.writerow(row)
                 yield Batch(pd.DataFrame(data_batch))
                 data_batch = []
         if data_batch:
+            with open('reads.csv', 'a') as f:
+                row = []
+                row.append(self.file_url)
+                for frame in data_batch:
+                    row.append(frame['id'])
+                # create the csv writer
+                writer = csv.writer(f)
+                # write a row to the csv file
+                writer.writerow(row)
             yield Batch(pd.DataFrame(data_batch))
 
     @abstractmethod

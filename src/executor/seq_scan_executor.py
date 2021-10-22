@@ -36,7 +36,6 @@ class SequentialScanExecutor(AbstractExecutor):
         pass
 
     def exec(self) -> Iterator[Batch]:
-
         child_executor = self.children[0]
         for batch in child_executor.exec():
             # We do the predicate first
