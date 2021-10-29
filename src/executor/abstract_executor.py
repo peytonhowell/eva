@@ -26,8 +26,10 @@ class AbstractExecutor(ABC):
     """
 
     def __init__(self, node: AbstractPlan):
+        print(type(self).__name__)
         self._node = node
         self._children = []
+
 
     def append_child(self, child: 'AbstractExecutor'):
         """

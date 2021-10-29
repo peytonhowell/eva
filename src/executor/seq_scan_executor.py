@@ -17,6 +17,9 @@ from typing import Iterator
 from src.models.storage.batch import Batch
 from src.executor.abstract_executor import AbstractExecutor
 from src.planner.seq_scan_plan import SeqScanPlan
+import csv
+import uuid
+from datetime import datetime as dt
 
 
 class SequentialScanExecutor(AbstractExecutor):
@@ -39,16 +42,38 @@ class SequentialScanExecutor(AbstractExecutor):
         child_executor = self.children[0]
         for batch in child_executor.exec():
             # We do the predicate first
+            tempBatch = batch
             if not batch.empty() and self.predicate is not None:
                 outcomes = self.predicate.evaluate(batch).frames
                 batch = Batch(
                     batch.frames[(outcomes > 0).to_numpy()].reset_index(
                         drop=True))
-
+            if (batch.empty()):
+                with open('trace.csv', 'a') as f:
+                    row = []
+                    row.append(uuid.uuid4())
+                    row.append(False)
+                    row.append(tempBatch.frames['id'][0])
+                    # create the csv writer
+                    row.append(dt.strftime(dt.now(), '%Y, %m, %d, %H, %M, %S'))
+                    writer = csv.writer(f)
+                    # write a row to the csv file
+                    writer.writerow(row)
             # Then do project
             if not batch.empty() and self.project_expr is not None:
+                # print("PROJECTION")
                 batches = [expr.evaluate(batch) for expr in self.project_expr]
                 batch = Batch.merge_column_wise(batches)
 
             if not batch.empty():
                 yield batch
+                with open('trace.csv', 'a') as f:
+                    row = []
+                    row.append(uuid.uuid4())
+                    row.append(False)
+                    row.append(batch.frames['id'][0])
+                    # create the csv writer
+                    row.append(dt.strftime(dt.now(), '%Y, %m, %d, %H, %M, %S'))
+                    writer = csv.writer(f)
+                    # write a row to the csv file
+                    writer.writerow(row)

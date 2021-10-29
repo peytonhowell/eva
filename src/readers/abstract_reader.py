@@ -16,9 +16,10 @@ from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import Iterator, Dict
 import pandas as pd
-
 from src.models.storage.batch import Batch
 import csv
+import uuid
+from datetime import datetime as dt
 
 class AbstractReader(metaclass=ABCMeta):
     """
@@ -55,12 +56,14 @@ class AbstractReader(metaclass=ABCMeta):
                 row_size = data['data'].nbytes
             data_batch.append(data)
             if len(data_batch) * row_size >= self.batch_mem_size:
-                with open('reads.csv', 'a') as f:
+                with open('trace.csv', 'a') as f:
                     row = []
-                    row.append(self.file_url)
+                    row.append(uuid.uuid4())
+                    row.append(True)
                     for frame in data_batch:
                         row.append(frame['id'])
                     # create the csv writer
+                    row.append(dt.strftime(dt.now(), '%Y, %m, %d, %H, %M, %S'))
                     writer = csv.writer(f)
                     # write a row to the csv file
                     writer.writerow(row)
