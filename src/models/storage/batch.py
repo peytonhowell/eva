@@ -21,6 +21,10 @@ from typing import Iterable
 from pandas import DataFrame
 from src.utils.logging_manager import LoggingManager, LoggingLevel
 
+import csv
+import uuid
+from datetime import datetime as dt
+
 
 class BatchEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -54,6 +58,21 @@ class Batch:
         # store the batch with columns sorted
         self.frames = frames
         self._identifier_column = identifier_column
+    def __del__(self):
+        if self.batch_size == 1 and 'id' in self.frames:
+            ids = self.frames['id']
+            print(ids[0])
+            print(self._frames)
+            with open('trace.csv', 'a') as f:
+                row = []
+                row.append(uuid.uuid4())
+                row.append(False)
+                row.append(self.frames['id'][0])
+                # create the csv writer
+                row.append(dt.strftime(dt.now(), '%Y, %m, %d, %H, %M, %S'))
+                writer = csv.writer(f)
+                # write a row to the csv file
+                writer.writerow(row)
 
     @property
     def frames(self):

@@ -48,17 +48,17 @@ class SequentialScanExecutor(AbstractExecutor):
                 batch = Batch(
                     batch.frames[(outcomes > 0).to_numpy()].reset_index(
                         drop=True))
-            if (batch.empty()):
-                with open('trace.csv', 'a') as f:
-                    row = []
-                    row.append(uuid.uuid4())
-                    row.append(False)
-                    row.append(tempBatch.frames['id'][0])
-                    # create the csv writer
-                    row.append(dt.strftime(dt.now(), '%Y, %m, %d, %H, %M, %S'))
-                    writer = csv.writer(f)
-                    # write a row to the csv file
-                    writer.writerow(row)
+            # if (batch.empty()):
+            #     with open('trace.csv', 'a') as f:
+            #         row = []
+            #         row.append(uuid.uuid4())
+            #         row.append(False)
+            #         row.append(tempBatch.frames['id'][0])
+            #         # create the csv writer
+            #         row.append(dt.strftime(dt.now(), '%Y, %m, %d, %H, %M, %S'))
+            #         writer = csv.writer(f)
+            #         # write a row to the csv file
+            #         writer.writerow(row)
             # Then do project
             if not batch.empty() and self.project_expr is not None:
                 # print("PROJECTION")
@@ -67,13 +67,13 @@ class SequentialScanExecutor(AbstractExecutor):
 
             if not batch.empty():
                 yield batch
-                with open('trace.csv', 'a') as f:
-                    row = []
-                    row.append(uuid.uuid4())
-                    row.append(False)
-                    row.append(batch.frames['id'][0])
-                    # create the csv writer
-                    row.append(dt.strftime(dt.now(), '%Y, %m, %d, %H, %M, %S'))
-                    writer = csv.writer(f)
-                    # write a row to the csv file
-                    writer.writerow(row)
+                # with open('trace.csv', 'a') as f:
+                #     row = []
+                #     row.append(uuid.uuid4())
+                #     row.append(False)
+                #     row.append(batch.frames['id'][0])
+                #     # create the csv writer
+                #     row.append(dt.strftime(dt.now(), '%Y, %m, %d, %H, %M, %S'))
+                #     writer = csv.writer(f)
+                #     # write a row to the csv file
+                #     writer.writerow(row)

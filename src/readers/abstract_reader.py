@@ -48,7 +48,6 @@ class AbstractReader(metaclass=ABCMeta):
         This calls the sub class read implementation and
         yields the batch to the caller
         """
-
         data_batch = []
         row_size = None
         for data in self._read():
@@ -70,7 +69,7 @@ class AbstractReader(metaclass=ABCMeta):
                 yield Batch(pd.DataFrame(data_batch))
                 data_batch = []
         if data_batch:
-            with open('reads.csv', 'a') as f:
+            with open('trace.csv', 'a') as f:
                 row = []
                 row.append(self.file_url)
                 for frame in data_batch:
