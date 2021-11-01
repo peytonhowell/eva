@@ -61,8 +61,6 @@ class Batch:
     def __del__(self):
         if self.batch_size == 1 and 'id' in self.frames:
             ids = self.frames['id']
-            print(ids[0])
-            print(self._frames)
             with open('trace.csv', 'a') as f:
                 row = []
                 row.append(uuid.uuid4())

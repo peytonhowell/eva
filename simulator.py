@@ -93,17 +93,22 @@ class FIFO(Policy):
 
 # raise Exception
 hit_rate = []
-simulator = Simulator('new_trace.csv')
-for i in range(6, 1025):
+for i in range(6, 400):
     try:
         policy = FIFO(i)
+        simulator = Simulator('overall_trace.csv')
         simulator.simulate(policy)
         hit_rate.append(float(simulator.hits)/simulator.total)
     except Exception as e:
+        print(e)
+        print(i)
         hit_rate.append(0)
 
 import matplotlib.pyplot as plt
 print(hit_rate)
-plt.scatter(range(6, 1025), hit_rate)
-plt.title("Hit Rate (proportion) Versus Buffer Size (in Video Frames)")
+plt.scatter(range(6, 400), hit_rate)
+plt.title("Buffer Size versus Hit Rate using FIFO")
+plt.xlabel("Buffer Size (# Video Frames)")
+plt.ylabel("Hit Rate (proportion)")
+
 plt.savefig('results')
