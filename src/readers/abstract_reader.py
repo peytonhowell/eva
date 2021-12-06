@@ -55,29 +55,29 @@ class AbstractReader(metaclass=ABCMeta):
                 row_size = data['data'].nbytes
             data_batch.append(data)
             if len(data_batch) * row_size >= self.batch_mem_size:
-                with open('trace.csv', 'a') as f:
-                    row = []
-                    row.append(uuid.uuid4())
-                    row.append(True)
-                    for frame in data_batch:
-                        row.append(frame['id'])
-                    # create the csv writer
-                    row.append(dt.strftime(dt.now(), '%Y, %m, %d, %H, %M, %S'))
-                    writer = csv.writer(f)
-                    # write a row to the csv file
-                    writer.writerow(row)
+                # with open('trace.csv', 'a') as f:
+                #     row = []
+                #     row.append(uuid.uuid4())
+                #     row.append(True)
+                #     for frame in data_batch:
+                #         row.append(frame['id'])
+                #     # create the csv writer
+                #     row.append(dt.strftime(dt.now(), '%Y, %m, %d, %H, %M, %S'))
+                #     writer = csv.writer(f)
+                #     # write a row to the csv file
+                #     writer.writerow(row)
                 yield Batch(pd.DataFrame(data_batch))
                 data_batch = []
         if data_batch:
-            with open('trace.csv', 'a') as f:
-                row = []
-                row.append(self.file_url)
-                for frame in data_batch:
-                    row.append(frame['id'])
-                # create the csv writer
-                writer = csv.writer(f)
-                # write a row to the csv file
-                writer.writerow(row)
+            # with open('trace.csv', 'a') as f:
+            #     row = []
+            #     row.append(self.file_url)
+            #     for frame in data_batch:
+            #         row.append(frame['id'])
+            #     # create the csv writer
+            #     writer = csv.writer(f)
+            #     # write a row to the csv file
+            #     writer.writerow(row)
             yield Batch(pd.DataFrame(data_batch))
 
     @abstractmethod

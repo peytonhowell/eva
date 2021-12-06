@@ -58,19 +58,31 @@ class Batch:
         # store the batch with columns sorted
         self.frames = frames
         self._identifier_column = identifier_column
-    def __del__(self):
         if self.batch_size == 1 and 'id' in self.frames:
-            ids = self.frames['id']
             with open('trace.csv', 'a') as f:
                 row = []
                 row.append(uuid.uuid4())
-                row.append(False)
-                row.append(self.frames['id'][0])
+                row.append(True)
+                row.append(self.frames['id'].iloc[0])
                 # create the csv writer
                 row.append(dt.strftime(dt.now(), '%Y, %m, %d, %H, %M, %S'))
                 writer = csv.writer(f)
                 # write a row to the csv file
                 writer.writerow(row)
+
+    def __del__(self):
+        if self.batch_size == 1 and 'id' in self.frames:
+            with open('trace.csv', 'a') as f:
+                row = []
+                row.append(uuid.uuid4())
+                row.append(False)
+                row.append(self.frames['id'].iloc[0])
+                # create the csv writer
+                row.append(dt.strftime(dt.now(), '%Y, %m, %d, %H, %M, %S'))
+                writer = csv.writer(f)
+                # write a row to the csv file
+                writer.writerow(row)
+
 
     @property
     def frames(self):

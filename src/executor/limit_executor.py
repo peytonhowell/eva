@@ -46,4 +46,3 @@ class LimitExecutor(AbstractExecutor):
 
             remaining_tuples -= len(batch)
             yield batch
-            print(batch)
