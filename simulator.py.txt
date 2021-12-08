@@ -1,10 +1,9 @@
 
 import queue
-from collections import Counter 
-
-import queue
 from collections import Counter, OrderedDict
 import random
+import matplotlib.pyplot as plt
+
 class Simulator:
     def __init__(self, filename):
         self.filename = filename
@@ -83,7 +82,7 @@ class TestPolicy2(Policy):
 class FIFO(Policy):
     "Notice that things close to 0 are closer to being evicted"
     def __init__(self, buffer_size):
-        self.name = "First In First Out"
+        self.name = "FIFO"
         self.size = buffer_size
         self.queue = []
         self.fixed = Counter()
@@ -112,7 +111,7 @@ class FIFO(Policy):
 
 class LRU(Policy):
     def __init__(self, buffer_size):
-        self.name = "Least Recently Used"
+        self.name = "LRU"
         self.size = buffer_size
         self.queue = OrderedDict()
         self.fixed = Counter()
@@ -142,7 +141,7 @@ class LRU(Policy):
 
 class RR(Policy):
     def __init__(self, buffer_size):
-        self.name = "Random Replacement"
+        self.name = "RR"
         self.size = buffer_size
         self.queue = []
         self.fixed = Counter()
@@ -179,6 +178,7 @@ class TwoQ(Policy):
         self.name = "Two Queue"
         self.size = buffer_size
         self.fifo = []
+        self.queue = []
         self.fifo_fixed = Counter()
         self.lru = OrderedDict()
         self.lru_fixed = Counter()
@@ -190,11 +190,18 @@ class TwoQ(Policy):
             return True
         ## Try to add to lru
         if frame_id in self.fifo:
-            if len(self.lru) == self.size:
+            if len(self.queue) >= self.size:
                 for id in self.lru:
                     if self.lru_fixed[id] == 0:
                         del self.lru[id]
+                        if id not in self.fifo:
+                            self.queue.remove(id)
+                        elif self.fifo_fixed[id] ==0:
+                            self.queue.remove(id)
+                            self.fifo.remove(id)
                         self.lru[frame_id] = None
+                        if frame_id not in self.queue:
+                            self.queue.append(frame_id)
                         self.lru_fixed[frame_id] += 1
                         break
                 else:
@@ -202,15 +209,20 @@ class TwoQ(Policy):
             else:
                 self.lru_fixed[frame_id] = 1 + self.fifo_fixed[frame_id]
                 self.lru[frame_id] = None
+                self.queue.append(frame_id)
             self.fifo_fixed[frame_id] = 0
             return True
         ## Add to FIFO
-        if len(self.fifo) == self.size:
+        if len(self.queue) >= self.size:
             for id in self.fifo:
                 if self.fifo_fixed[id] == 0:
+                    if id not in self.lru:
+                        self.queue.remove(id)
                     self.fifo.remove(id)
                     self.fifo.append(frame_id)
                     self.fifo_fixed[frame_id] += 1
+                    if frame_id not in self.queue:
+                        self.queue.append(frame_id)
                     break
             else:
                 raise Exception("All items in queue are fixed")
@@ -229,7 +241,7 @@ class TwoQ(Policy):
 
 class LFU(Policy):
     def __init__(self, buffer_size):
-        self.name = "Least Frequently Used"
+        self.name = "LFU"
         self.size = buffer_size
         self.queue = {}
         self.fixed = Counter()
@@ -266,47 +278,88 @@ class LFU(Policy):
 
 
 if __name__ == "__main__":
-    pass
     # raise Exception
-    # hit_rate = []
+    hit_rate = []
+    for file in ["ftrace_combined.csv", "trace1.csv", "trace2.csv","trace3.csv","trace4.csv","trace5.csv","trace6.csv","trace7.csv","ftrace_newVideo.csv",]:        
+        for p in [RR, FIFO, LRU, LFU]:
+            hit_rate = []
+            for i in range(6, 400):
+                try:
+                    policy = p(i)
+                    simulator = Simulator(file)
+                    simulator.simulate(policy)
+                    hit_rate.append(float(simulator.hits)/simulator.total)
+                except Exception as e:
+                    hit_rate.append(0)
+
+            print(hit_rate)
+            
+            plt.scatter(range(6, 400), hit_rate, label=policy.name, s=8)
+        
+        plt.title("Buffer Size versus Hit Rate")
+        plt.xlabel("Buffer Size (# Video Frames)")
+        plt.ylabel("Hit Rate (proportion)")
+        
+        plt.legend()
+        plt.savefig(f'{file[:-4]}-results')
+        break
+
+
+    # fifo_hit = []
+    # twoQ_hit = []
+    # rr_hit = []
+    # lfu_hit = []
+    # lru_hit = []
+    # file = 'ftrace_combined.csv'
+    # for i in range(6, 400):
+    #     try:
+    #         policy = LFU(i)
+    #         simulator = Simulator(file)
+    #         simulator.simulate(policy)
+    #         lfu_hit.append(float(simulator.hits)/simulator.total)
+    #     except Exception as e:
+    #         lfu_hit.append(0)
+    # for i in range(6, 400):
+    #     try:
+    #         policy = LRU(i)
+    #         simulator = Simulator(file)
+    #         simulator.simulate(policy)
+    #         lru_hit.append(float(simulator.hits)/simulator.total)
+    #     except Exception as e:
+    #         lru_hit.append(0)
+    # for i in range(6, 400):
+    #     try:
+    #         policy = RR(i)
+    #         simulator = Simulator(file)
+    #         simulator.simulate(policy)
+    #         rr_hit.append(float(simulator.hits)/simulator.total)
+    #     except Exception as e:
+    #         rr_hit.append(0)
+    # for i in range(6, 400):
+    #     try:
+    #         policy = TwoQ(i)
+    #         simulator = Simulator(file)
+    #         simulator.simulate(policy)
+    #         twoQ_hit.append(float(simulator.hits)/simulator.total)
+    #     except Exception as e:
+    #         twoQ_hit.append(0)
     # for i in range(6, 400):
     #     try:
     #         policy = FIFO(i)
-    #         simulator = Simulator('overall_trace.csv')
+    #         simulator = Simulator(file)
     #         simulator.simulate(policy)
-    #         hit_rate.append(float(simulator.hits)/simulator.total)
+    #         fifo_hit.append(float(simulator.hits)/simulator.total)
     #     except Exception as e:
-    #         print(e)
-    #         print(i)
-    #         hit_rate.append(0)
-
+    #         fifo_hit.append(0)
     # import matplotlib.pyplot as plt
-    # print(hit_rate)
-    # plt.scatter(range(6, 400), hit_rate)
-    # plt.title("Buffer Size versus Hit Rate using FIFO")
+
+    # plt.scatter(range(6, 400), fifo_hit,  label="FIFO", s=10)
+    # plt.scatter(range(6, 400), twoQ_hit, label="TwoQ", s=10)
+    # plt.scatter(range(6, 400), rr_hit, label="RR", s=10)
+    # plt.scatter(range(6, 400), lfu_hit, label="LFU", s=10)
+    # plt.scatter(range(6, 400), lru_hit, label="LRU", s=10)
+    # plt.legend()
+    # plt.title("Buffer Size versus Hit Rate")
     # plt.xlabel("Buffer Size (# Video Frames)")
     # plt.ylabel("Hit Rate (proportion)")
-
-    # plt.savefig('results')
-
-# raise Exception
-    hit_rate = []
-    for i in range(6, 400):
-        try:
-            policy = LRU(i)
-            simulator = Simulator('ftrace_combined.csv')
-            simulator.simulate(policy)
-            hit_rate.append(float(simulator.hits)/simulator.total)
-        except Exception as e:
-            print(e)
-            print(i)
-            hit_rate.append(0)
-
-    import matplotlib.pyplot as plt
-    print(hit_rate)
-    plt.scatter(range(6, 400), hit_rate)
-    plt.title("Buffer Size versus Hit Rate using LRU")
-    plt.xlabel("Buffer Size (# Video Frames)")
-    plt.ylabel("Hit Rate (proportion)")
-
-    plt.savefig('results')
+    # plt.savefig('all_ftrace_combined')
